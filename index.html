@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>znrl 타자측정기 ver.1</title>
+  <style>
+    body {
+      font-family: 'Pretendard', sans-serif;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      transition: background 2s ease;
+    }
+    header {
+      background-color: #1e90ff;
+      padding: 20px;
+      color: white;
+      font-size: 24px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    header img {
+      width: 24px;
+      height: 24px;
+    }
+    .nickname-area {
+      margin: 20px;
+    }
+    #nickname {
+      padding: 10px;
+      font-size: 18px;
+    }
+    #modeSelector, #levelSelector {
+      margin: 10px;
+      font-size: 16px;
+    }
+    #startButton {
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    #startButton:hover {
+      background-color: #45a049;
+    }
+    .sentence {
+      font-size: 24px;
+      margin: 20px;
+    }
+    .input-area {
+      margin-top: 20px;
+    }
+    input[type="text"] {
+      width: 60%;
+      padding: 10px;
+      font-size: 20px;
+    }
+    .timer-bar {
+      height: 10px;
+      width: 100%;
+      background: lightgray;
+      margin-top: 10px;
+      position: relative;
+    }
+    .timer-fill {
+      height: 10px;
+      background: green;
+      transition: width 0.1s linear;
+    }
+    .ranking, .champion {
+      margin-top: 30px;
+      padding: 15px;
+      background: white;
+      border-radius: 12px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .gold { color: gold; font-weight: bold; }
+    .silver { color: silver; font-weight: bold; }
+    .bronze { color: #cd7f32; font-weight: bold; }
+    .fade-in {
+      animation: fadeIn 1s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    #popup {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border: 2px solid #333;
+      padding: 20px;
+      z-index: 1000;
+      display: none;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+    #popup h2 {
+      margin-top: 0;
+    }
+    #popup button {
+      padding: 8px 16px;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="https://cdn-icons-png.flaticon.com/512/2920/2920050.png" alt="clock icon" />
+    znrl 타자측정기 var.1
+  </header>
+  </div>
+
+  <div class="nickname-area">
+    <input type="text" id="nickname" placeholder="닉네임을 입력하세요" />
+    <select id="modeSelector">
+      <option value="practice">연습모드</option>
+      <option value="challenge">도전모드</option>
+    </select>
+    <select id="levelSelector" disabled>
+      <option value="easy">Easy</option>
+      <option value="normal" disabled>Normal</option>
+      <option value="hard" disabled>Hard</option>
+      <option value="extreme" disabled>HardExtreme</option>
+    </select>
+    <button id="startButton">게임 시작</button>
+  </div>
+  <div class="sentence" id="sentence"></div>
+  <div class="input-area fade-in">
+    <input type="text" id="userInput" placeholder="여기에 타이핑하세요" autocomplete="off" disabled/>
+    <div class="timer-bar" id="timerBar"><div class="timer-fill" id="timerFill"></div></div>
+  </div>
+  <div class="ranking" id="rankingSection">
+    <h2>랭킹</h2>
+    <ol id="rankingList"></ol>
+  </div>
+  <div class="champion" id="championSection">
+    <h2>CHAMPION 명예의 전당</h2>
+    <p id="championInfo">아직 챔피언이 없습니다.</p>
+  </div>
+
+  <div class="info">
+    <h2>게임 설명</h2>
+    <p>이 타자 측정기는 연습모드와 도전모드가 있습니다.</p>
+    <ul>
+      <li><strong>연습모드</strong>: 제한 시간 없이 자유롭게 타자 연습을 할 수 있으며, 랭킹에도 저장됩니다.</li>
+      <li><strong>도전모드</strong>: 시간 제한 내에 문장을 모두 타이핑해야 하며, 결과는 랭킹에 반영됩니다.</li>
+      <li><strong>난이도</strong>: Easy, Normal,Hard 순으로 구성되며 점점 문장이 길고 어렵습니다.</li>
+      <li><strong>랭킹</strong>: 모드에 따라 별도로 유저이름(클리어 난이도/타속) 형식으로 저장됩니다.</li>
+      <li><strong>챔피언</strong>:클리어가 불가능하다고 판단한 Extreme난이도를 클리어해야합니다.</li>
+      <li><strong>타자측정</strong>:이 타자 측정 사이트는 반복되는 문장을 연습하는 사이트입니다.</li>
+      <li><strong>기타</strong>: ver.1인 점 참고해주세요. 저장 기능 없습니다. 알아서 하세요, 어쩔건데 내가 개발자인데 ㅅㅂ</li>
+    </ul>
+
+  <div id="popup"></div>
+  <script>
+    const levels = {
+      easy: ["나는 오늘도 학교에 갔다.", "점심시간이 가장 기다려진다.", "친구들과 놀이터에서 놀았다.", "클리어 축하"],
+      normal: ["나는 종종 혼자 산책하면서 생각을 정리하곤 한다.", "시간이 지나면 결국 모든 일은 해결된다", "클리어 축하"],
+      hard: ["비가 오는 날에는 커피 한 잔과 함께 책을 읽는 것을 좋아한다.", "성공은 끊임없는 노력과 인내에서 비롯된다", "클리어 축하"],
+      extreme: ["Let's go to the park 그리고 저녁은 삼겹살 먹자.", "Typing은 매일 practice해야 실력이 는다고 한다.", "아니 이거 어케 한거냐 챔피언 축하드림"]
+    }; 
+    const bgColors = {
+      easy: "#d0fdf0",
+      normal: "#aaffcc",
+      hard: "#ff8888",
+      extreme: "#ffd580",
+    };
+
+    let currentLevel = "easy", currentMode = "practice", sentenceList = [], currentIndex = 0, startTime, interval, canProceed = true;
+    let typedSpeeds = [], userNickname = "";
+    const inputEl = document.getElementById("userInput");
+    const sentenceEl = document.getElementById("sentence");
+    const timerFill = document.getElementById("timerFill");
+    const timerBar = document.getElementById("timerBar");
+    const popup = document.getElementById("popup");
+    const levelSelector = document.getElementById("levelSelector");
+    document.getElementById("modeSelector").onchange = e => {
+      currentMode = e.target.value;
+      levelSelector.disabled = currentMode === "practice";
+    };
+    document.getElementById("startButton").onclick = () => {
+      userNickname = document.getElementById("nickname").value.trim();
+      if (!userNickname) return alert("닉네임을 입력해주세요!");
+      currentLevel = currentMode === "practice" ? "normal" : levelSelector.value;
+      document.body.style.background = bgColors[currentLevel];
+      sentenceList = [...levels[currentLevel]];
+      currentIndex = 0;
+      typedSpeeds = [];
+      inputEl.disabled = false;
+      inputEl.value = "";
+      showSentence();
+    };
+    function showSentence() {
+      if (currentIndex >= sentenceList.length) return finishGame();
+      inputEl.value = "";
+      sentenceEl.innerText = sentenceList[currentIndex];
+      inputEl.focus();
+      canProceed = true;
+      startTime = Date.now();
+      clearInterval(interval);
+      timerBar.style.display = currentMode === "practice" ? "none" : "block";
+      if (currentMode !== "practice") {
+        interval = setInterval(() => {
+          const elapsed = (Date.now() - startTime) / 1000;
+          const percent = Math.max(0, ((9 - elapsed) / 9) * 100);
+          timerFill.style.width = percent + "%";
+          if (percent <= 0) {
+            clearInterval(interval);
+            canProceed = false;
+            inputEl.disabled = true;
+            popup.innerHTML = `<h2>시간 초과</h2><p>다시 시도해주세요.</p><br/><button onclick="closePopup()">닫기</button>`;
+            popup.style.display = "block";
+          }
+        }, 100);
+      }
+    }
+    inputEl.addEventListener("keydown", e => {
+      if (e.key === "Enter" && canProceed) {
+        const typed = inputEl.value.trim();
+        const target = sentenceList[currentIndex];
+        if (typed.length === target.length || currentMode === "practice") {
+          const speed = Math.round((typed.length / ((Date.now() - startTime) / 1000)) * 60);
+          typedSpeeds.push(speed);
+          currentIndex++;
+          showSentence();
+        } else {
+          alert("글자 수가 다릅니다. 다시 시도하세요.");
+        }
+      }
+    });
+    function finishGame() {
+      clearInterval(interval);
+      inputEl.disabled = true;
+      const avg = Math.round(typedSpeeds.reduce((a, b) => a + b, 0) / typedSpeeds.length || 0);
+      const max = Math.max(...typedSpeeds);
+      const platform = /Android/i.test(navigator.userAgent) ? "Android" : /Win/i.test(navigator.userAgent) ? "Windows" : "기타";
+      const date = new Date().toLocaleString();
+      let msg = `<h2>클리어 결과</h2>`;
+      msg += `<p>닉네임: ${userNickname}</p>`;
+      msg += `<p>날짜: ${date}</p>`;
+      msg += `<p>사용 기종: ${platform}</p>`;
+      msg += `<p>타자 속도: 평균 ${avg}타 / 최고 ${max}타</p>`;
+      if (currentMode === "challenge") {
+        saveRanking({ nickname: `${userNickname}(${currentLevel}/${avg})`, average: avg, max, date, platform });
+        msg += `<p><strong>${currentLevel.toUpperCase()} 클리어!</strong></p>`;
+        if (currentLevel === "extreme") {
+          document.getElementById("championInfo").innerText = `${userNickname} - ${avg}타 (${date})`;
+        }
+        unlockLevelAfterClear(currentLevel);
+      }
+      msg += `<br/><button onclick="closePopup()">닫기</button>`;
+      popup.innerHTML = msg;
+      popup.style.display = "block";
+    }
+    function closePopup() {
+      popup.style.display = "none";
+      inputEl.value = "";
+      inputEl.disabled = true;
+    }
+    function unlockLevelAfterClear(level) {
+      const order = ["easy", "normal", "hard", "extreme"];
+      const next = order[order.indexOf(level) + 1];
+      if (next) levelSelector.querySelector(`option[value="${next}"]`).disabled = false;
+    }
+    function saveRanking(result) {
+      const data = JSON.parse(localStorage.getItem("znrl_rankings") || "[]");
+      data.push(result);
+      localStorage.setItem("znrl_rankings", JSON.stringify(data));
+      updateRankingUI();
+    }
+    function updateRankingUI() {
+      const data = JSON.parse(localStorage.getItem("znrl_rankings") || "[]");
+      const top3 = data.sort((a, b) => b.average - a.average).slice(0, 3);
+      const list = top3.map((entry, i) => {
+        const cls = i === 0 ? 'gold' : i === 1 ? 'silver' : 'bronze';
+        return `<li class="${cls}">${entry.nickname}</li>`;
+      }).join("");
+      document.getElementById("rankingList").innerHTML = list;
+    }
+    updateRankingUI();
+  </script>
+</body>
+</html>
